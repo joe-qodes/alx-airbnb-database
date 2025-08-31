@@ -146,3 +146,4 @@ Table Message {
   message_body TEXT [not null]
   sent_at TIMESTAMP [default: `CURRENT_TIMESTAMP`]
 }
+...
