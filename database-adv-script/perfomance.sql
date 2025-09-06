@@ -1,5 +1,5 @@
 -- Initial Complex Query
--- Retrieves all bookings along with user, property, and payment details
+-- Retrieves all bookings with user, property, and payment details (unoptimized)
 EXPLAIN ANALYZE
 SELECT 
     b.booking_id,
@@ -18,14 +18,13 @@ SELECT
 FROM Booking b
 JOIN "User" u ON b.user_id = u.user_id
 JOIN Property p ON b.property_id = p.property_id
-LEFT JOIN Payment pay ON b.booking_id = pay.booking_id;
+LEFT JOIN Payment pay ON b.booking_id = pay.booking_id
+WHERE u.email = 'alice@example.com'
+  AND b.start_date > '2025-09-01';
 
 
 -- Refactored Query
--- Improvements:
--- 1. Use only necessary columns instead of SELECT *
--- 2. Ensure indexes are used (idx_booking_user_property, idx_user_email, idx_booking_start_date)
--- 3. Keep LEFT JOIN only where nullable (payments may not exist)
+-- Optimized: fewer columns, uses indexes, avoids unnecessary data
 EXPLAIN ANALYZE
 SELECT 
     b.booking_id,
@@ -34,11 +33,12 @@ SELECT
     b.total_price,
     b.status,
     u.first_name || ' ' || u.last_name AS user_full_name,
-    u.email,
     p.name AS property_name,
     pay.amount,
     pay.payment_method
 FROM Booking b
 JOIN "User" u ON b.user_id = u.user_id
 JOIN Property p ON b.property_id = p.property_id
-LEFT JOIN Payment pay ON b.booking_id = pay.booking_id;
+LEFT JOIN Payment pay ON b.booking_id = pay.booking_id
+WHERE u.email = 'alice@example.com'
+  AND b.start_date > '2025-09-01';
