@@ -1,21 +1,28 @@
--- database_index.sql
--- Indexes to improve query performance in Airbnb clone
 
-
--- User table indexes
--- Unique index already exists on email from schema.sql
--- Create index on role (if filtering/admin queries often)
+-- User table
+CREATE INDEX idx_user_email ON "User"(email);
 CREATE INDEX idx_user_role ON "User"(role);
 
--- Property table indexes
--- Already indexed host_id in schema.sql
--- Add index on location for faster search by city
+-- Property table
 CREATE INDEX idx_property_location ON Property(location);
 
--- Booking table indexes
--- Already indexed user_id and property_id in schema.sql
--- Add index on start_date for queries filtering by date
+-- Booking table
 CREATE INDEX idx_booking_start_date ON Booking(start_date);
-
--- Composite index for frequent user/property queries
 CREATE INDEX idx_booking_user_property ON Booking(user_id, property_id);
+
+-- Performance Test Queries
+-- Query performance BEFORE and AFTER indexes are visible with EXPLAIN ANALYZE
+
+EXPLAIN ANALYZE
+SELECT *
+FROM Booking b
+JOIN "User" u ON b.user_id = u.user_id
+WHERE u.email = 'alice@example.com'
+  AND b.start_date > '2025-09-01';
+
+EXPLAIN ANALYZE
+SELECT p.property_id, p.name, COUNT(b.booking_id) AS total_bookings
+FROM Property p
+LEFT JOIN Booking b ON p.property_id = b.property_id
+GROUP BY p.property_id, p.name
+ORDER BY total_bookings DESC;
